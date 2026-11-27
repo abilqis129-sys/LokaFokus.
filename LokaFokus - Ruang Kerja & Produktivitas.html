@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LokaFokus — Ruang Kerja & Produktivitas Santai</title>
+    
+    <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome untuk Ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        warm: {
+                            50: '#FDFBF7',
+                            100: '#F7F3EB',
+                            200: '#EFE6D5',
+                            300: '#E2D1B5',
+                            800: '#292524',
+                            900: '#1C1917',
+                            950: '#141210'
+                        },
+                        sage: {
+                            500: '#5C7C66',
+                            600: '#4A6653',
+                            700: '#3B5243'
+                        },
+                        terracotta: {
+                            500: '#D97757',
+                            600: '#C26243'
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-6px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-warm-50 text-stone-800 dark:bg-warm-950 dark:text-stone-200 transition-colors duration-300 min-h-screen flex flex-col selection:bg-terracotta-500 selection:text-white">
+
+    <!-- Notifikasi Toast (Pengganti alert) -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Header / Navbar -->
+    <header class="w-full border-b border-stone-200/80 dark:border-stone-800/80 bg-white/70 dark:bg-warm-900/70 backdrop-blur-md sticky top-0 z-30 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Logo & Nama -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-terracotta-500 to-amber-600 flex items-center justify-center text-white shadow-md shadow-terracotta-500/20">
+                    <i class="fa-solid fa-mug-hot text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-display font-bold text-xl tracking-tight text-stone-900 dark:text-white leading-none">LokaFokus</h1>
+                    <p class="text-xs text-stone-500 dark:text-stone-400 mt-0.5">Ruang Kerja & Ketenangan</p>
+                </div>
+            </div>
+
+            <!-- Jam Real-time & Tanggal (Desktop) -->
+            <div class="hidden md:flex flex-col items-center">
+                <div id="live-clock" class="font-display font-semibold text-base text-stone-800 dark:text-stone-200">00:00</div>
+                <div id="live-date" class="text-xs text-stone-500 dark:text-stone-400">Memuat tanggal...</div>
+            </div>
+
+            <!-- Kontrol Kanan: Toggle Tema -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button id="theme-toggle" aria-label="Ubah Tema" class="p-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-terracotta-500">
+                    <i id="theme-icon" class="fa-solid fa-moon text-base w-5 h-5 flex items-center justify-center"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Konten Utama -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        
+        <!-- Sapaan & Kutipan Harian -->
+        <section class="mb-6 sm:mb-8 bg-gradient-to-r from-warm-100 to-amber-50/70 dark:from-warm-900 dark:to-stone-900/90 border border-stone-200/70 dark:border-stone-800 rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all">
+            <div class="space-y-1.5 max-w-3xl">
+                <div class="flex items-center gap-2">
+                    <span id="greeting-badge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-terracotta-500/10 text-terracotta-600 dark:bg-terracotta-500/20 dark:text-terracotta-500">
+                        <i class="fa-solid fa-sun text-[10px]"></i> Selamat Pagi
+                    </span>
+                    <span class="text-xs text-stone-400 dark:text-stone-500">•</span>
+                    <span class="text-xs text-stone-500 dark:text-stone-400">Inspirasi Hari Ini</span>
+                </div>
+                <blockquote id="quote-text" class="font-display font-semibold text-base sm:text-lg text-stone-800 dark:text-stone-100 leading-relaxed">
+                    "Fokus bukanlah tentang mengatakan ya pada hal yang harus difokuskan, melainkan mengatakan tidak pada ratusan ide bagus lainnya."
+                </blockquote>
+                <p id="quote-author" class="text-xs sm:text-sm text-stone-500 dark:text-stone-400 font-medium">— Steve Jobs</p>
+            </div>
+            <button id="new-quote-btn" title="Kutipan Baru" class="self-end md:self-center shrink-0 px-3.5 py-2 rounded-xl bg-white/80 hover:bg-white dark:bg-stone-800 dark:hover:bg-stone-700 border border-stone-200/80 dark:border-stone-700 text-xs font-medium text-stone-700 dark:text-stone-300 flex items-center gap-2 shadow-sm transition-all active:scale-95">
+                <i class="fa-solid fa-arrows-rotate text-terracotta-500"></i>
+                <span>Ganti Kutipan</span>
+            </button>
+        </section>
+
+        <!-- Grid Dashboard Utama -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
+            
+            <!-- Kolom Kiri (7 Kolom di Desktop): Pomodoro Timer & Pemutar Suara Ambien -->
+            <div class="lg:col-span-7 flex flex-col gap-6 sm:gap-8">
+                
+                <!-- Kartu 1: Pomodoro Timer -->
+                <div class="bg-white dark:bg-warm-900 border border-stone-200/80 dark:border-stone-800 rounded-3xl p-6 sm:p-8 shadow-sm transition-all">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-terracotta-500/10 text-terracotta-500 flex items-center justify-center">
+                                <i class="fa-solid fa-hourglass-half"></i>
+                            </div>
+                            <h2 class="font-display font-bold text-lg text-stone-900 dark:text-white">Pengatur Waktu Fokus</h2>
+                        </div>
+                        
+                        <!-- Statistik Sesi Hari Ini -->
+                        <div class="flex items-center gap-2 bg-warm-100 dark:bg-stone-800/80 px-3 py-1.5 rounded-xl text-xs font-medium text-stone-600 dark:text-stone-300">
+                            <i class="fa-solid fa-fire text-amber-500"></i>
+                            <span>Sesi Selesai: <strong id="session-count" class="text-stone-900 dark:text-white font-bold">0</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Tab Mode Pomodoro -->
+                    <div class="grid grid-cols-3 gap-2 p-1.5 bg-warm-100 dark:bg-stone-800/90 rounded-2xl mb-8">
+                        <button data-mode="pomodoro" class="mode-btn py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-white dark:bg-warm-900 text-terracotta-600 dark:text-terracotta-500 shadow-sm">
+                            Fokus (25m)
+                        </button>
+                        <button data-mode="shortBreak" class="mode-btn py-2 px-3 rounded-xl text-xs sm:text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition-all">
+                            Istirahat Singkat (5m)
+                        </button>
+                        <button data-mode="longBreak" class="mode-btn py-2 px-3 rounded-xl text-xs sm:text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition-all">
+                            Istirahat Panjang (15m)
+                        </button>
+                    </div>
+
+                    <!-- Lingkaran Visual & Tampilan Waktu -->
+                    <div class="relative flex flex-col items-center justify-center my-4">
+                        <div class="relative w-56 h-56 sm:w-64 sm:h-64 flex items-center justify-center">
+                            <!-- SVG Progress Ring -->
+                            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="45" fill="transparent" stroke="currentColor" stroke-width="4" class="text-stone-100 dark:text-stone-800" />
+                                <circle id="timer-progress" cx="50" cy="50" r="45" fill="transparent" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="282.74" stroke-dashoffset="0" class="text-terracotta-500 transition-all duration-500 ease-linear" />
+                            </svg>
+                            
+                            <!-- Teks Waktu di Tengah -->
+                            <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                                <span id="timer-display" class="font-display font-extrabold text-5xl sm:text-6xl tracking-tight text-stone-900 dark:text-white tabular-nums">25:00</span>
+                                <span id="timer-status-text" class="text-xs font-medium text-stone-500 dark:text-stone-400 mt-2 uppercase tracking-wider">Siap untuk fokus</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Kontrol Timer -->
+                    <div class="flex items-center justify-center gap-3 sm:gap-4 mt-8">
+                        <button id="timer-toggle-btn" class="px-8 py-3.5 rounded-2xl bg-terracotta-500 hover:bg-terracotta-600 text-white font-display font-bold text-base shadow-lg shadow-terracotta-500/25 flex items-center gap-2.5 transition-all active:scale-95">
+                            <i id="timer-toggle-icon" class="fa-solid fa-play"></i>
+                            <span id="timer-toggle-label">Mulai Fokus</span>
+                        </button>
+                        <button id="timer-reset-btn" title="Atur Ulang Waktu" class="p-3.5 rounded-2xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 transition-all active:scale-95">
+                            <i class="fa-solid fa-rotate-left text-lg w-6 h-6 flex items-center justify-center"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Kartu 2: Pemutar Suara Ambien (Web Audio API Synthesizer) -->
+                <div class="bg-white dark:bg-warm-900 border border-stone-200/80 dark:border-stone-800 rounded-3xl p-6 sm:p-8 shadow-sm transition-all">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-sage-500/15 text-sage-600 dark:text-emerald-400 flex items-center justify-center">
+                                <i class="fa-solid fa-headphones"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-display font-bold text-lg text-stone-900 dark:text-white leading-tight">Suasana Ambien</h2>
+                                <p class="text-xs text-stone-500 dark:text-stone-400">Campurkan suara alam & kafe untuk menemani kerja</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Tombol Hentikan Semua Suara -->
+                        <button id="stop-all-sounds" class="hidden text-xs font-medium px-3 py-1.5 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/50 dark:text-rose-400 dark:hover:bg-rose-900/60 transition-colors">
+                            <i class="fa-solid fa-volume-xmark mr-1"></i> Hentikan Semua
+                        </button>
+                    </div>
+
+                    <!-- Grid Kartu Suara -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        
+                        <!-- Suara 1: Hujan Rintik -->
+                        <div class="sound-card p-4 rounded-2xl border border-stone-200/80 dark:border-stone-800 bg-warm-50/50 dark:bg-stone-800/40 transition-all" data-sound="rain">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-3">
+                                    <button class="sound-toggle-btn w-10 h-10 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 flex items-center justify-center shadow-sm transition-all hover:border-sky-400">
+                                        <i class="fa-solid fa-cloud-rain text-base"></i>
+                                    </button>
+                                    <div>
+                                        <h3 class="font-semibold text-sm text-stone-800 dark:text-stone-100">Hujan Rintik</h3>
+                                        <p class="sound-status text-[11px] text-stone-400">Nonaktif</p>
+                                    </div>
+                                </div>
+                                <span class="volume-label text-xs font-medium text-stone-500 dark:text-stone-400">0%</span>
+                            </div>
+                            <input type="range" min="0" max="100" value="0" aria-label="Volume Hujan Rintik" class="sound-slider w-full h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg appearance-none cursor-pointer accent-sky-500">
+                        </div>
+
+                        <!-- Suara 2: Suasana Kafe -->
+                        <div class="sound-card p-4 rounded-2xl border border-stone-200/80 dark:border-stone-800 bg-warm-50/50 dark:bg-stone-800/40 transition-all" data-sound="cafe">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-3">
+                                    <button class="sound-toggle-btn w-10 h-10 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 flex items-center justify-center shadow-sm transition-all hover:border-amber-500">
+                                        <i class="fa-solid fa-mug-saucer text-base"></i>
+                                    </button>
+                                    <div>
+                                        <h3 class="font-semibold text-sm text-stone-800 dark:text-stone-100">Kafe Hangat</h3>
+                                        <p class="sound-status text-[11px] text-stone-400">Nonaktif</p>
+                                    </div>
+                                </div>
+                                <span class="volume-label text-xs font-medium text-stone-500 dark:text-stone-400">0%</span>
+                            </div>
+                            <input type="range" min="0" max="100" value="0" aria-label="Volume Kafe Hangat" class="sound-slider w-full h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg appearance-none cursor-pointer accent-amber-500">
+                        </div>
+
+                        <!-- Suara 3: Angin Hutan -->
+                        <div class="sound-card p-4 rounded-2xl border border-stone-200/80 dark:border-stone-800 bg-warm-50/50 dark:bg-stone-800/40 transition-all" data-sound="forest">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-3">
+                                    <button class="sound-toggle-btn w-10 h-10 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 flex items-center justify-center shadow-sm transition-all hover:border-emerald-500">
+                                        <i class="fa-solid fa-leaf text-base"></i>
+                                    </button>
+                                    <div>
+                                        <h3 class="font-semibold text-sm text-stone-800 dark:text-stone-100">Angin Hutan</h3>
+                                        <p class="sound-status text-[11px] text-stone-400">Nonaktif</p>
+                                    </div>
+                                </div>
+                                <span class="volume-label text-xs font-medium text-stone-500 dark:text-stone-400">0%</span>
+                            </div>
+                            <input type="range" min="0" max="100" value="0" aria-label="Volume Angin Hutan" class="sound-slider w-full h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                        </div>
+
+                        <!-- Suara 4: Api Unggun / Perapian -->
+                        <div class="sound-card p-4 rounded-2xl border border-stone-200/80 dark:border-stone-800 bg-warm-50/50 dark:bg-stone-800/40 transition-all" data-sound="fire">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-3">
+                                    <button class="sound-toggle-btn w-10 h-10 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 flex items-center justify-center shadow-sm transition-all hover:border-orange-500">
+                                        <i class="fa-solid fa-fire-flame-curved text-base"></i>
+                                    </button>
+                                    <div>
+                                        <h3 class="font-semibold text-sm text-stone-800 dark:text-stone-100">Api Perapian</h3>
+                                        <p class="sound-status text-[11px] text-stone-400">Nonaktif</p>
+                                    </div>
+                                </div>
+                                <span class="volume-label text-xs font-medium text-stone-500 dark:text-stone-400">0%</span>
+                            </div>
+                            <input type="range" min="0" max="100" value="0" aria-label="Volume Api Perapian" class="sound-slider w-full h-1.5 bg-stone-200 dark:bg-stone-700 rounded-lg appearance-none cursor-pointer accent-orange-500">
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Kolom Kanan (5 Kolom di Desktop): Daftar Tugas Interaktif (To-Do List) -->
+            <div class="lg:col-span-5 flex flex-col gap-6">
+                <div class="bg-white dark:bg-warm-900 border border-stone-200/80 dark:border-stone-800 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col h-full transition-all">
+                    
+                    <!-- Header Daftar Tugas -->
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                                <i class="fa-solid fa-list-check"></i>
+                            </div>
+                            <div>
+                                <h2 class="font-display font-bold text-lg text-stone-900 dark:text-white leading-tight">Daftar Tugas</h2>
+                                <p class="text-xs text-stone-500 dark:text-stone-400">Tersimpan otomatis di perangkat Anda</p>
+                            </div>
+                        </div>
+                        <span id="task-counter" class="text-xs font-semibold px-2.5 py-1 rounded-xl bg-warm-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300">
+                            0/0 Selesai
+                        </span>
+                    </div>
+
+                    <!-- Progress Bar Tugas -->
+                    <div class="w-full h-2 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden mb-6">
+                        <div id="task-progress-bar" class="h-full bg-sage-500 transition-all duration-500 rounded-full" style="width: 0%"></div>
+                    </div>
+
+                    <!-- Form Tambah Tugas -->
+                    <form id="todo-form" class="flex flex-col gap-2.5 mb-6">
+                        <div class="flex gap-2">
+                            <input type="text" id="todo-input" placeholder="Tulis target atau tugas baru..." required autocomplete="off"
+                                class="flex-1 px-4 py-3 rounded-2xl bg-warm-50 dark:bg-stone-800/80 border border-stone-200 dark:border-stone-700 text-sm text-stone-800 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-terracotta-500 transition-all">
+                            <button type="submit" aria-label="Tambah Tugas" class="px-4 py-3 rounded-2xl bg-stone-900 hover:bg-stone-800 dark:bg-terracotta-500 dark:hover:bg-terracotta-600 text-white font-medium text-sm shadow-sm transition-all active:scale-95 shrink-0 flex items-center gap-1.5">
+                                <i class="fa-solid fa-plus"></i>
+                                <span class="hidden sm:inline">Tambah</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Pilihan Prioritas / Tag -->
+                        <div class="flex items-center justify-between px-1">
+                            <div class="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400">
+                                <span>Prioritas:</span>
+                                <label class="cursor-pointer inline-flex items-center gap-1">
+                                    <input type="radio" name="priority" value="normal" checked class="accent-stone-600">
+                                    <span>Biasa</span>
+                                </label>
+                                <label class="cursor-pointer inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
+                                    <input type="radio" name="priority" value="penting" class="accent-amber-500">
+                                    <span>Penting</span>
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Filter Tugas -->
+                    <div class="flex items-center justify-between border-b border-stone-100 dark:border-stone-800 pb-3 mb-4 text-xs">
+                        <div class="flex gap-1.5">
+                            <button data-filter="all" class="filter-btn px-2.5 py-1 rounded-lg font-semibold bg-stone-200/70 dark:bg-stone-800 text-stone-900 dark:text-white transition-colors">Semua</button>
+                            <button data-filter="active" class="filter-btn px-2.5 py-1 rounded-lg font-medium text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-white transition-colors">Aktif</button>
+                            <button data-filter="completed" class="filter-btn px-2.5 py-1 rounded-lg font-medium text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-white transition-colors">Selesai</button>
+                        </div>
+                        <button id="clear-completed-btn" class="text-stone-400 hover:text-rose-500 transition-colors hidden">
+                            Hapus yang selesai
+                        </button>
+                    </div>
+
+                    <!-- Daftar Item Tugas -->
+                    <ul id="todo-list" class="flex-1 space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
+                        <!-- Item tugas akan dirender di sini oleh JavaScript -->
+                    </ul>
+
+                    <!-- State Kosong -->
+                    <div id="empty-todo-state" class="hidden py-10 text-center flex-col items-center justify-center">
+                        <div class="w-12 h-12 rounded-2xl bg-warm-100 dark:bg-stone-800 text-stone-400 flex items-center justify-center mb-3">
+                            <i class="fa-solid fa-feather-pointed text-xl"></i>
+                        </div>
+                        <p class="text-sm font-medium text-stone-600 dark:text-stone-300">Belum ada tugas di daftar ini</p>
+                        <p class="text-xs text-stone-400 mt-1">Mulai dengan menambahkan satu target kecil hari ini.</p>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer Sederhana -->
+    <footer class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-xs text-stone-400 dark:text-stone-500 border-t border-stone-200/50 dark:border-stone-800/50 mt-8">
+        <p>Dibuat dengan ketenangan untuk produktivitas Anda • <strong>LokaFokus</strong></p>
+    </footer>
+
+    <!-- Logika Aplikasi JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // ==========================================
+            // 1. MANAJEMEN TEMA (TERANG / GELAP)
+            // ==========================================
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            const htmlElement = document.documentElement;
+
+            function initTheme() {
+                const savedTheme = localStorage.getItem('lokafokus_theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                
+                if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                    htmlElement.classList.add('dark');
+                    themeIcon.classList.replace('fa-moon', 'fa-sun');
+                } else {
+                    htmlElement.classList.remove('dark');
+                    themeIcon.classList.replace('fa-sun', 'fa-moon');
+                }
+            }
+
+            themeToggleBtn.addEventListener('click', () => {
+                const isDark = htmlElement.classList.toggle('dark');
+                localStorage.setItem('lokafokus_theme', isDark ? 'dark' : 'light');
+                if (isDark) {
+                    themeIcon.classList.replace('fa-moon', 'fa-sun');
+                } else {
+                    themeIcon.classList.replace('fa-sun', 'fa-moon');
+                }
+            });
+
+            initTheme();
+
+            // ==========================================
+            // 2. NOTIFIKASI TOAST (PENGGANTI ALERT)
+            // ==========================================
+            function showToast(message, type = 'info') {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                
+                const colors = {
+                    info: 'bg-stone-900 text-white dark:bg-stone-800 border-stone-700',
+                    success: 'bg-sage-600 text-white border-sage-500',
+                    warm: 'bg-terracotta-500 text-white border-terracotta-400'
+                };
+
+                const icons = {
+                    info: 'fa-circle-info',
+                    success: 'fa-circle-check',
+                    warm: 'fa-bell'
+                };
+
+                toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl border shadow-lg text-sm font-medium transform transition-all duration-300 translate-y-4 opacity-0 ${colors[type] || colors.info}`;
+                toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i><span>${message}</span>`;
+                
+                container.appendChild(toast);
+
+                // Animasi masuk
+                requestAnimationFrame(() => {
+                    toast.classList.remove('translate-y-4', 'opacity-0');
+                });
+
+                // Hilang otomatis setelah 3.5 detik
+                setTimeout(() => {
+                    toast.classList.add('translate-y-4', 'opacity-0');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3500);
+            }
+
+            // ==========================================
+            // 3. JAM REAL-TIME & SAPAAN DINAMIS
+            // ==========================================
+            function updateClockAndGreeting() {
+                const now = new Date();
+                const hours = now.getHours();
+                
+                // Format Jam
+                const timeString = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('live-clock').textContent = timeString;
+                
+                // Format Tanggal
+                const dateString = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                document.getElementById('live-date').textContent = dateString;
+
+                // Sapaan berdasarkan waktu
+                const badge = document.getElementById('greeting-badge');
+                let greeting = 'Selamat Malam';
+                let icon = 'fa-moon';
+
+                if (hours >= 4 && hours < 11) {
+                    greeting = 'Selamat Pagi';
+                    icon = 'fa-mug-hot';
+                } else if (hours >= 11 && hours < 15) {
+                    greeting = 'Selamat Siang';
+                    icon = 'fa-sun';
+                } else if (hours >= 15 && hours < 18) {
+                    greeting = 'Selamat Sore';
+                    icon = 'fa-cloud-sun';
+                }
+
+                badge.innerHTML = `<i class="fa-solid ${icon} text-[10px]"></i> ${greeting}`;
+            }
+
+            updateClockAndGreeting();
+            setInterval(updateClockAndGreeting, 10000);
+
+            // ==========================================
+            // 4. KUTIPAN INSPIRATIF HARIAN
+            // ==========================================
+            const quotes = [
+                { text: "Fokus bukanlah tentang mengatakan ya pada hal yang harus difokuskan, melainkan mengatakan tidak pada ratusan ide bagus lainnya.", author: "Steve Jobs" },
+                { text: "Langkah kecil yang dilakukan secara konsisten setiap hari akan menghasilkan perubahan besar di masa depan.", author: "Pepatah Klasik" },
+                { text: "Ketenangan pikiran adalah salah satu permata terindah dari kebijaksanaan.", author: "James Allen" },
+                { text: "Jangan terburu-buru; alam tidak pernah tergesa-gesa, namun segalanya terselesaikan dengan sempurna.", author: "Lao Tzu" },
+                { text: "Produktivitas sejati bukan tentang melakukan lebih banyak hal, tetapi melakukan hal yang paling bermakna.", author: "LokaFokus" },
+                { text: "Istirahat bukanlah tanda kemalasan, melainkan bagian penting dari proses berkarya.", author: "Anonim" },
+                { text: "Mulailah dari tempatmu berada, gunakan apa yang kamu miliki, lakukan apa yang kamu bisa.", author: "Arthur Ashe" }
+            ];
+
+            let currentQuoteIdx = Math.floor(Math.random() * quotes.length);
+
+            function renderQuote(index) {
+                const quoteText = document.getElementById('quote-text');
+                const quoteAuthor = document.getElementById('quote-author');
+                quoteText.style.opacity = 0;
+                quoteAuthor.style.opacity = 0;
+                
+                setTimeout(() => {
+                    quoteText.textContent = `"${quotes[index].text}"`;
+                    quoteAuthor.textContent = `— ${quotes[index].author}`;
+                    quoteText.style.transition = 'opacity 0.3s ease';
+                    quoteAuthor.style.transition = 'opacity 0.3s ease';
+                    quoteText.style.opacity = 1;
+                    quoteAuthor.style.opacity = 1;
+                }, 150);
+            }
+
+            renderQuote(currentQuoteIdx);
+
+            document.getElementById('new-quote-btn').addEventListener('click', () => {
+                let nextIdx;
+                do {
+                    nextIdx = Math.floor(Math.random() * quotes.length);
+                } while (nextIdx === currentQuoteIdx && quotes.length > 1);
+                currentQuoteIdx = nextIdx;
+                renderQuote(currentQuoteIdx);
+            });
+
+            // ==========================================
+            // 5. POMODORO TIMER & NOTIFIKASI SUARA LONCENG
+            // ==========================================
+            const MODES = {
+                pomodoro: { minutes: 25, label: 'Waktunya fokus penuh', colorClass: 'text-terracotta-500' },
+                shortBreak: { minutes: 5, label: 'Istirahat sejenak, tarik napas', colorClass: 'text-sage-500' },
+                longBreak: { minutes: 15, label: 'Istirahat panjang untuk menyegarkan pikiran', colorClass: 'text-sky-500' }
+            };
+
+            let currentMode = 'pomodoro';
+            let timeLeft = MODES.pomodoro.minutes * 60;
+            let totalTime = MODES.pomodoro.minutes * 60;
+            let timerInterval = null;
+            let isRunning = false;
+            let completedSessions = parseInt(localStorage.getItem('lokafokus_sessions') || '0', 10);
+
+            const timerDisplay = document.getElementById('timer-display');
+            const timerStatusText = document.getElementById('timer-status-text');
+            const timerProgress = document.getElementById('timer-progress');
+            const toggleBtn = document.getElementById('timer-toggle-btn');
+            const toggleIcon = document.getElementById('timer-toggle-icon');
+            const toggleLabel = document.getElementById('timer-toggle-label');
+            const resetBtn = document.getElementById('timer-reset-btn');
+            const sessionCountEl = document.getElementById('session-count');
+            const modeBtns = document.querySelectorAll('.mode-btn');
+
+            const CIRCUMFERENCE = 2 * Math.PI * 45; // r = 45 -> ~282.74
+            timerProgress.style.strokeDasharray = CIRCUMFERENCE;
+            sessionCountEl.textContent = completedSessions;
+
+            // Suara lonceng lembut menggunakan Web Audio API saat timer selesai
+            function playBellSound() {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(528, ctx.currentTime); // Nada menenangkan 528Hz
+                    osc.frequency.exponentialRampToValueAtTime(264, ctx.currentTime + 1.5);
+                    
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.8);
+                    
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    
+                    osc.start();
+                    osc.stop(ctx.currentTime + 1.8);
+                } catch (e) {
+                    console.warn('AudioContext tidak didukung atau diblokir:', e);
+                }
+            }
+
+            function updateTimerUI() {
+                const mins = Math.floor(timeLeft / 60);
+                const secs = timeLeft % 60;
+                const formatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                
+                timerDisplay.textContent = formatted;
+                document.title = isRunning ? `(${formatted}) LokaFokus` : 'LokaFokus — Ruang Kerja & Produktivitas Santai';
+
+                // Update Progress Ring
+                const offset = CIRCUMFERENCE - (timeLeft / totalTime) * CIRCUMFERENCE;
+                timerProgress.style.strokeDashoffset = offset;
+            }
+
+            function switchMode(mode) {
+                if (isRunning) pauseTimer();
+                currentMode = mode;
+                totalTime = MODES[mode].minutes * 60;
+                timeLeft = totalTime;
+
+                // Update gaya tombol tab
+                modeBtns.forEach(btn => {
+                    if (btn.dataset.mode === mode) {
+                        btn.className = 'mode-btn py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-white dark:bg-warm-900 text-terracotta-600 dark:text-terracotta-500 shadow-sm';
+                    } else {
+                        btn.className = 'mode-btn py-2 px-3 rounded-xl text-xs sm:text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition-all';
+                    }
+                });
+
+                // Update warna ring
+                timerProgress.classList.remove('text-terracotta-500', 'text-sage-500', 'text-sky-500');
+                timerProgress.classList.add(MODES[mode].colorClass);
+                timerStatusText.textContent = MODES[mode].label;
+
+                updateTimerUI();
+            }
+
+            function startTimer() {
+                if (isRunning) return;
+                isRunning = true;
+                toggleIcon.classList.replace('fa-play', 'fa-pause');
+                toggleLabel.textContent = 'Jeda';
+                timerStatusText.textContent = currentMode === 'pomodoro' ? 'Sedang fokus...' : 'Sedang beristirahat...';
+
+                timerInterval = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        updateTimerUI();
+                    } else {
+                        pauseTimer();
+                        playBellSound();
+                        
+                        if (currentMode === 'pomodoro') {
+                            completedSessions++;
+                            localStorage.setItem('lokafokus_sessions', completedSessions);
+                            sessionCountEl.textContent = completedSessions;
+                            showToast('Sesi fokus selesai! Waktunya istirahat sejenak.', 'warm');
+                            switchMode('shortBreak');
+                        } else {
+                            showToast('Waktu istirahat selesai! Siap untuk kembali fokus?', 'success');
+                            switchMode('pomodoro');
+                        }
+                    }
+                }, 1000);
+            }
+
+            function pauseTimer() {
+                isRunning = false;
+                clearInterval(timerInterval);
+                toggleIcon.classList.replace('fa-pause', 'fa-play');
+                toggleLabel.textContent = 'Lanjutkan';
+                timerStatusText.textContent = 'Dijeda';
+                document.title = 'LokaFokus — Ruang Kerja & Produktivitas Santai';
+            }
+
+            function resetTimer() {
+                pauseTimer();
+                timeLeft = totalTime;
+                toggleLabel.textContent = 'Mulai Fokus';
+                timerStatusText.textContent = MODES[currentMode].label;
+                updateTimerUI();
+            }
+
+            toggleBtn.addEventListener('click', () => {
+                if (isRunning) pauseTimer();
+                else startTimer();
+            });
+
+            resetBtn.addEventListener('click', resetTimer);
+
+            modeBtns.forEach(btn => {
+                btn.addEventListener('click', () => switchMode(btn.dataset.mode));
+            });
+
+            updateTimerUI();
+
+            // ==========================================
+            // 6. PEMUTAR SUARA AMBIEN (WEB AUDIO API)
+            // ==========================================
+            class AmbientAudioEngine {
+                constructor() {
+                    this.ctx = null;
+                    this.tracks = {};
+                }
+
+                initContext() {
+                    if (!this.ctx) {
+                        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                    if (this.ctx.state === 'suspended') {
+                        this.ctx.resume();
+                    }
+                }
+
+                createNoiseBuffer(type = 'pink') {
+                    const bufferSize = this.ctx.sampleRate * 3; // 3 detik loop mulus
+                    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                    const output = buffer.getChannelData(0);
+
+                    if (type === 'white') {
+                        for (let i = 0; i < bufferSize; i++) {
+                            output[i] = Math.random() * 2 - 1;
+                        }
+                    } else if (type === 'pink') {
+                        let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+                        for (let i = 0; i < bufferSize; i++) {
+                            const white = Math.random() * 2 - 1;
+                            b0 = 0.99886 * b0 + white * 0.0555179;
+                            b1 = 0.99332 * b1 + white * 0.0750759;
+                            b2 = 0.96900 * b2 + white * 0.1538520;
+                            b3 = 0.86650 * b3 + white * 0.3104856;
+                            b4 = 0.55000 * b4 + white * 0.5329522;
+                            b5 = -0.7616 * b5 - white * 0.0168980;
+                            output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+                            output[i] *= 0.08;
+                            b6 = white * 0.115926;
+                        }
+                    } else if (type === 'brown') {
+                        let lastOut = 0.0;
+                        for (let i = 0; i < bufferSize; i++) {
+                            const white = Math.random() * 2 - 1;
+                            output[i] = (lastOut + (0.02 * white)) / 1.02;
+                            lastOut = output[i];
+                            output[i] *= 2.5;
+                        }
+                    }
+                    return buffer;
+                }
+
+                setupTrack(name) {
+                    this.initContext();
+                    if (this.tracks[name]) return this.tracks[name];
+
+                    const source = this.ctx.createBufferSource();
+                    const filter = this.ctx.createBiquadFilter();
+                    const gainNode = this.ctx.createGain();
+                    gainNode.gain.value = 0;
+
+                    if (name === 'rain') {
+                        // Hujan: Pink noise dengan lowpass lembut
+                        source.buffer = this.createNoiseBuffer('pink');
+                        filter.type = 'lowpass';
+                        filter.frequency.value = 950;
+                    } else if (name === 'cafe') {
+                        // Kafe: Brown noise hangat dengan bandpass frekuensi percakapan jauh
+                        source.buffer = this.createNoiseBuffer('brown');
+                        filter.type = 'bandpass';
+                        filter.frequency.value = 420;
+                        filter.Q.value = 0.7;
+                    } else if (name === 'forest') {
+                        // Angin hutan: Pink noise dengan bandpass berdesir
+                        source.buffer = this.createNoiseBuffer('pink');
+                        filter.type = 'bandpass';
+                        filter.frequency.value = 600;
+                        filter.Q.value = 1.8;
+                    } else if (name === 'fire') {
+                        // Api unggun: Brown noise dalam dengan gemuruh rendah
+                        source.buffer = this.createNoiseBuffer('brown');
+                        filter.type = 'lowpass';
+                        filter.frequency.value = 320;
+                    }
+
+                    source.loop = true;
+                    source.connect(filter);
+                    filter.connect(gainNode);
+                    gainNode.connect(this.ctx.destination);
+                    source.start(0);
+
+                    this.tracks[name] = { source, filter, gainNode };
+                    return this.tracks[name];
+                }
+
+                setVolume(name, volumePercent) {
+                    const normalized = Math.max(0, Math.min(1, volumePercent / 100));
+                    if (normalized === 0 && !this.tracks[name]) return;
+
+                    const track = this.setupTrack(name);
+                    // Transisi volume halus
+                    track.gainNode.gain.setTargetAtTime(normalized * 0.45, this.ctx.currentTime, 0.08);
+                }
+            }
+
+            const audioEngine = new AmbientAudioEngine();
+            const soundCards = document.querySelectorAll('.sound-card');
+            const stopAllBtn = document.getElementById('stop-all-sounds');
+
+            function updateStopAllVisibility() {
+                const anyActive = Array.from(soundCards).some(card => {
+                    return parseInt(card.querySelector('.sound-slider').value, 10) > 0;
+                });
+                if (anyActive) {
+                    stopAllBtn.classList.remove('hidden');
+                } else {
+                    stopAllBtn.classList.add('hidden');
+                }
+            }
+
+            function updateCardState(card, value) {
+                const soundName = card.dataset.sound;
+                const slider = card.querySelector('.sound-slider');
+                const label = card.querySelector('.volume-label');
+                const status = card.querySelector('.sound-status');
+                const btn = card.querySelector('.sound-toggle-btn');
+
+                slider.value = value;
+                label.textContent = `${value}%`;
+                audioEngine.setVolume(soundName, value);
+
+                if (value > 0) {
+                    status.textContent = 'Aktif';
+                    status.classList.replace('text-stone-400', 'text-sage-600');
+                    status.classList.add('dark:text-emerald-400', 'font-medium');
+                    card.classList.add('border-terracotta-500/40', 'bg-white', 'dark:bg-stone-800');
+                    btn.classList.add('bg-terracotta-500', 'text-white', 'border-terracotta-500');
+                    btn.classList.remove('bg-white', 'dark:bg-stone-800', 'text-stone-600', 'dark:text-stone-300');
+                } else {
+                    status.textContent = 'Nonaktif';
+                    status.classList.remove('text-sage-600', 'dark:text-emerald-400', 'font-medium');
+                    status.classList.add('text-stone-400');
+                    card.classList.remove('border-terracotta-500/40', 'bg-white', 'dark:bg-stone-800');
+                    btn.classList.remove('bg-terracotta-500', 'text-white', 'border-terracotta-500');
+                    btn.classList.add('bg-white', 'dark:bg-stone-800', 'text-stone-600', 'dark:text-stone-300');
+                }
+
+                updateStopAllVisibility();
+            }
+
+            soundCards.forEach(card => {
+                const slider = card.querySelector('.sound-slider');
+                const btn = card.querySelector('.sound-toggle-btn');
+
+                slider.addEventListener('input', (e) => {
+                    updateCardState(card, parseInt(e.target.value, 10));
+                });
+
+                btn.addEventListener('click', () => {
+                    const currentVal = parseInt(slider.value, 10);
+                    const nextVal = currentVal > 0 ? 0 : 50;
+                    updateCardState(card, nextVal);
+                });
+            });
+
+            stopAllBtn.addEventListener('click', () => {
+                soundCards.forEach(card => updateCardState(card, 0));
+                showToast('Semua suara ambien dihentikan.', 'info');
+            });
+
+            // ==========================================
+            // 7. DAFTAR TUGAS (TO-DO LIST) + LOCALSTORAGE
+            // ==========================================
+            let todos = JSON.parse(localStorage.getItem('lokafokus_todos')) || [
+                { id: '1', text: 'Tentukan 1 prioritas utama hari ini', completed: false, priority: 'penting' },
+                { id: '2', text: 'Selesaikan 1 sesi Pomodoro fokus (25 menit)', completed: false, priority: 'normal' },
+                { id: '3', text: 'Minum segelas air putih', completed: true, priority: 'normal' }
+            ];
+            let currentFilter = 'all';
+
+            const todoForm = document.getElementById('todo-form');
+            const todoInput = document.getElementById('todo-input');
+            const todoList = document.getElementById('todo-list');
+            const emptyState = document.getElementById('empty-todo-state');
+            const taskCounter = document.getElementById('task-counter');
+            const taskProgressBar = document.getElementById('task-progress-bar');
+            const clearCompletedBtn = document.getElementById('clear-completed-btn');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+
+            function saveTodos() {
+                localStorage.setItem('lokafokus_todos', JSON.stringify(todos));
+            }
+
+            function renderTodos() {
+                // Hitung statistik
+                const total = todos.length;
+                const completed = todos.filter(t => t.completed).length;
+                taskCounter.textContent = `${completed}/${total} Selesai`;
+                
+                const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
+                taskProgressBar.style.width = `${percentage}%`;
+
+                if (completed > 0) {
+                    clearCompletedBtn.classList.remove('hidden');
+                } else {
+                    clearCompletedBtn.classList.add('hidden');
+                }
+
+                // Filter daftar tugas
+                const filteredTodos = todos.filter(todo => {
+                    if (currentFilter === 'active') return !todo.completed;
+                    if (currentFilter === 'completed') return todo.completed;
+                    return true;
+                });
+
+                todoList.innerHTML = '';
+
+                if (filteredTodos.length === 0) {
+                    emptyState.classList.remove('hidden');
+                    emptyState.classList.add('flex');
+                } else {
+                    emptyState.classList.add('hidden');
+                    emptyState.classList.remove('flex');
+
+                    filteredTodos.forEach(todo => {
+                        const li = document.createElement('li');
+                        li.className = `group flex items-center justify-between gap-3 p-3.5 rounded-2xl border transition-all duration-200 ${
+                            todo.completed 
+                            ? 'bg-stone-50/70 dark:bg-stone-800/30 border-stone-100 dark:border-stone-800/60 opacity-75' 
+                            : 'bg-warm-50/60 dark:bg-stone-800/60 border-stone-200/70 dark:border-stone-700/80 hover:border-terracotta-500/40'
+                        }`;
+
+                        const priorityBadge = todo.priority === 'penting' && !todo.completed
+                            ? `<span class="shrink-0 px-2 py-0.5 text-[10px] font-semibold rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400">Penting</span>`
+                            : '';
+
+                        li.innerHTML = `
+                            <div class="flex items-center gap-3 flex-1 min-w-0 cursor-pointer" data-action="toggle" data-id="${todo.id}">
+                                <button type="button" aria-label="Tandai selesai" class="w-5 h-5 rounded-lg border flex items-center justify-center shrink-0 transition-colors ${
+                                    todo.completed 
+                                    ? 'bg-sage-500 border-sage-500 text-white' 
+                                    : 'border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 group-hover:border-terracotta-500'
+                                }">
+                                    ${todo.completed ? '<i class="fa-solid fa-check text-[10px]"></i>' : ''}
+                                </button>
+                                <span class="text-sm truncate transition-all ${
+                                    todo.completed 
+                                    ? 'line-through text-stone-400 dark:text-stone-500' 
+                                    : 'text-stone-800 dark:text-stone-100 font-medium'
+                                }">${escapeHTML(todo.text)}</span>
+                                ${priorityBadge}
+                            </div>
+                            <button type="button" data-action="delete" data-id="${todo.id}" aria-label="Hapus tugas" class="p-1.5 rounded-lg text-stone-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            </button>
+                        `;
+                        todoList.appendChild(li);
+                    });
+                }
+            }
+
+            // Sanitasi teks input pengguna agar aman dari XSS
+            function escapeHTML(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            todoForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const text = todoInput.value.trim();
+                if (!text) return;
+
+                const priority = document.querySelector('input[name="priority"]:checked').value;
+
+                const newTodo = {
+                    id: Date.now().toString(),
+                    text,
+                    completed: false,
+                    priority
+                };
+
+                todos.unshift(newTodo);
+                saveTodos();
+                renderTodos();
+                todoInput.value = '';
+                showToast('Tugas berhasil ditambahkan!', 'success');
+            });
+
+            todoList.addEventListener('click', (e) => {
+                const target = e.target.closest('[data-action]');
+                if (!target) return;
+
+                const action = target.dataset.action;
+                const id = target.dataset.id;
+
+                if (action === 'toggle') {
+                    todos = todos.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+                    saveTodos();
+                    renderTodos();
+                } else if (action === 'delete') {
+                    todos = todos.filter(t => t.id !== id);
+                    saveTodos();
+                    renderTodos();
+                    showToast('Tugas dihapus.', 'info');
+                }
+            });
+
+            clearCompletedBtn.addEventListener('click', () => {
+                todos = todos.filter(t => !t.completed);
+                saveTodos();
+                renderTodos();
+                showToast('Tugas yang sudah selesai telah dibersihkan.', 'info');
+            });
+
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentFilter = btn.dataset.filter;
+                    filterBtns.forEach(b => {
+                        if (b.dataset.filter === currentFilter) {
+                            b.className = 'filter-btn px-2.5 py-1 rounded-lg font-semibold bg-stone-200/70 dark:bg-stone-800 text-stone-900 dark:text-white transition-colors';
+                        } else {
+                            b.className = 'filter-btn px-2.5 py-1 rounded-lg font-medium text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-white transition-colors';
+                        }
+                    });
+                    renderTodos();
+                });
+            });
+
+            // Render awal daftar tugas
+            renderTodos();
+        });
+    </script>
+</body>
+</html>
